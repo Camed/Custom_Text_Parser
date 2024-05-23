@@ -1,6 +1,3 @@
-using Xunit;
-using NSubstitute;
-using FluentAssertions;
 using Custom_Text_Parser.Interfaces;
 
 namespace Custom_Text_Parser;

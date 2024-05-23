@@ -1,7 +1,4 @@
-﻿using NSubstitute;
-using Xunit;
-using FluentAssertions;
-using Custom_Text_Parser.Parsing;
+﻿using Custom_Text_Parser.Parsing;
 using Custom_Text_Parser.Common;
 using System.Collections.Generic;
 using Custom_Text_Parser.Interfaces;
@@ -134,7 +131,7 @@ public class Parser_Tests
        // mbank_MT940 = mbank_MT940.Replace("\n", "");
        // mbank_MT940_Template = mbank_MT940_Template.Replace("\n", "");
 
-        var MT940Template = new MT940Template(mbank_MT940_Template);
+        var MT940Template = new Template(mbank_MT940_Template);
         var parser = new Parser();
 
         // Act

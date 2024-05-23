@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MT940_Parser\Custom_Text_Parser.csproj" />
+    <ProjectReference Include="..\Custom_Text_Parser\Custom_Text_Parser.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,6 +1,4 @@
-﻿using Xunit;
-using FluentAssertions;
-using Custom_Text_Parser.Common;
+﻿using Custom_Text_Parser.Common;
 using System.Collections.Generic;
 using Custom_Text_Parser.Parsing;
 using System.Reflection;
@@ -14,7 +12,7 @@ public class Template_Tests
     {
         // Arrange
         string templateText = "Amount: {{OriginalPostingAmount}} Currency: {{OriginalCurrency}}";
-        var template = new MT940Template(templateText);
+        var template = new Template(templateText);
 
         var expectedResult = new List<string> { "OriginalPostingAmount", "OriginalCurrency" };
 

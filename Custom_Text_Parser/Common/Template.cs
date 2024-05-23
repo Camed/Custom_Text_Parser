@@ -5,16 +5,16 @@ using Custom_Text_Parser.Enums;
 namespace Custom_Text_Parser.Common;
 
 /// <summary>
-/// Template implementation, here is MT940 parser.
+/// Template implementation
 /// </summary>
-public class MT940Template : ITemplate
+public class Template : ITemplate
 {
     public string TemplateText { get; set; }
     public IList<string> Placeholders { get; private set; }
     public IList<string> OuterPlaceholders { get; private set; }
     public IList<string> RecurringPlaceholders { get; private set; }
     public string RecurringTemplate { get; private set; }
-    public MT940Template(string templateText)
+    public Template(string templateText)
     {
         TemplateText = templateText.Replace("\r\n", "\n");
         Placeholders = ExtractPlaceholders(templateText);

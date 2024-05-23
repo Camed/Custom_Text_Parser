@@ -1,6 +1,4 @@
-﻿using Xunit;
-using FluentAssertions;
-using Custom_Text_Parser.Common;
+﻿using Custom_Text_Parser.Common;
 using Custom_Text_Parser.Enums;
 
 namespace MT940_Parser_Tests;
