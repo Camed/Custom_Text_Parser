@@ -125,7 +125,7 @@ public class Parser : IParser
         if (!result.ContainsKey(placeholder))
             result[placeholder] = [];
 
-        result[placeholder].Add(value);
+        result[placeholder].Add(value.Trim());
     }
 
     /// <summary>
