@@ -1,7 +1,6 @@
 ﻿using Custom_Text_Parser.Interfaces;
-using System;
 
-namespace MT940_Parser.Services;
+namespace Custom_Text_Parser.Services;
 
 public class ParserService : IParserService
 {

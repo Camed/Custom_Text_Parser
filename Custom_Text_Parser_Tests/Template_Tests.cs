@@ -25,4 +25,48 @@ public class Template_Tests
             options => options.WithStrictOrdering(),
             because: "Template should correctly identify and extract all placeholders.");
     }
+
+    [Fact]
+    public void ExtractRecurringTemplate_ShouldReturnCorrectTemplate_WhenTemplateIsValid()
+    {
+        // Arrange
+        string templateText = "Start{{RecurringStart}}RecurringContent{{RecurringEnd}}End";
+        var template = new Template(templateText);
+
+        var expectedResult = "RecurringContent";
+
+        // Act
+        var recurringTemplate = template.ExtractRecurringTemplate();
+
+        // Assert
+        recurringTemplate.Should().Be(expectedResult, because: "The template should correctly extract recurring section");
+    }
+
+    [Fact]
+    public void ExtractPlaceholders_ShouldReturnEmptyList_WhenNoPlaceholdersInTemplate()
+    {
+        // Arrange
+        string templateText = "Template without placeholders";
+        var template = new Template(templateText);
+
+        // Act
+        var placeholders = template.ExtractPlaceholders();
+
+        // Assert
+        placeholders.Should().BeEmpty(because: "The template does not contain any placeholders");
+    }
+
+    [Fact]
+    public void ExtractRecurringTemplate_ShouldReturnEmptyString_WhenNoRecurringSection()
+    {
+        // Arrange 
+        string templateText = "No recurring section in this {{Template}}";
+        var template = new Template(templateText);
+
+        // Act
+        var recurringTemplate = template.ExtractRecurringTemplate();
+
+        // Assert
+        recurringTemplate.Should().BeEmpty(because: "The template does not containt a recurring section");
+    }
 }

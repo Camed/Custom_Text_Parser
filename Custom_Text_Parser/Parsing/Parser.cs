@@ -33,6 +33,10 @@ public class Parser : IParser
             try
             {
                 var matches = Regex.Matches(contentClone, regex, RegexOptions.Singleline);
+                if (!matches.Any())
+                {
+                    throw new ParsingException();
+                }
                 foreach (Match match in matches)
                 {
                     var recurringMatches = match.Groups["RecurringSection"].Captures;

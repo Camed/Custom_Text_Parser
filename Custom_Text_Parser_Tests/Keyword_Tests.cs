@@ -1,7 +1,7 @@
 ﻿using Custom_Text_Parser.Common;
 using Custom_Text_Parser.Enums;
 
-namespace MT940_Parser_Tests;
+namespace Custom_Text_Parser;
 public class Keyword_Tests
 {
     [Theory]

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Custom_Text_Parser.Interfaces;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using Custom_Text_Parser.Exceptions;
 
 namespace Custom_Text_Parser;
 
@@ -68,7 +69,7 @@ public class Parser_Tests
         // Arrange
         string templateText = "Account: {{AccountRecipient}}\nDate: {{PostingDate}}";
         IList<string> placeholders = new List<string> { "AccountRecipient", "PostingDate" };
-        string expectedRegex = "^Account: (?<AccountRecipient>.+?)\nDate: (?<PostingDate>.+?)$";
+        string expectedRegex = "^Account: (?<AccountRecipient>.+?){{NEWLINE}}Date: (?<PostingDate>.+?)$";
         Type type = typeof(Parser);
         MethodInfo method = type.GetMethod("BuildRegexFromTemplate", BindingFlags.NonPublic | BindingFlags.Static);
 
@@ -142,4 +143,38 @@ public class Parser_Tests
         "x".Should().Be("x");
     }
 
+    [Fact]
+    public void Parse_ShouldHandleEmptyContent()
+    {
+        // Arrange
+        var template = Substitute.For<ITemplate>();
+        template.TemplateText.Returns("Account: {{AccountRecipient}}\nDate: {{PostingDate}}");
+        template.Placeholders.Returns(new List<string>() { "AccountRecipient", "PostingDate" });
+        var parser = new Parser();
+
+        // Act
+        var result = parser.Parse("", template);
+
+        // Assert
+        result.Should().BeEmpty(because: "Parsing empty content should return an empty result");
+    }
+
+    [Fact]
+    public void Parse_ShoundThrowParsingException_WhenPlaceholdersDoNotMatch()
+    {
+        // Arrange
+        string input = "Mismatched input data";
+        var template = Substitute.For<ITemplate>();
+
+        template.TemplateText.Returns(":Test:{{MismatchedPlaceholder}}");
+        template.Placeholders.Returns(new List<string>() { "MismatchedPlaceholder" });
+
+        var parser = new Parser();
+
+        // Act
+        Action action = () => parser.Parse(input, template);
+
+        // Assert
+        action.Should().Throw<ParsingException>(because: "The input data does not match the template");
+    }
 }
