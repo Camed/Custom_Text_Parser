@@ -50,10 +50,10 @@ public class Parser : IParser
                         .Replace("{{NEWLINE}}", "\n")
                         );
                 }
-                foreach (Capture recurringMatch in recurringMatches)
-                {
-                    GetRecurringData(ref result, recurringMatch.Value, template);
-                }
+            }
+            foreach (Capture recurringMatch in recurringMatches)
+            {
+                GetRecurringData(ref result, recurringMatch.Value, template);
             }
 
         }

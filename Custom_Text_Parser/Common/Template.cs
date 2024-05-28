@@ -18,12 +18,12 @@ public class Template : ITemplate
 
     public Template(string templateText, bool includeDefaultPlaceholders = false)
     {
+        IncludeDefaultPlaceholders = includeDefaultPlaceholders;
         TemplateText = templateText.Replace("\r\n", "\n");
-        Placeholders = ExtractPlaceholders(templateText);
-        RecurringTemplate = ExtractRecurringTemplate(templateText);
+        Placeholders = ExtractPlaceholders();
+        RecurringTemplate = ExtractRecurringTemplate();
         RecurringPlaceholders = ExtractPlaceholders(RecurringTemplate);
         OuterPlaceholders = Placeholders.Except(RecurringPlaceholders).ToList();
-        IncludeDefaultPlaceholders = includeDefaultPlaceholders;
     }
 
 
