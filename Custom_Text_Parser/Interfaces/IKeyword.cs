@@ -8,6 +8,6 @@ namespace Custom_Text_Parser.Interfaces;
 /// </summary>
 public interface IKeyword
 {
-    public string? KeywordValue { get; }
+    public string KeywordValue { get; }
     public KeywordType KeywordType { get; }
 }

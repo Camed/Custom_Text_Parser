@@ -33,30 +33,4 @@ public interface ITemplate
     /// Placeholders within recurring section
     /// </summary>
     public IList<string> RecurringPlaceholders { get; }
-
-    /// <summary>
-    /// Extract placeholders from template
-    /// </summary>
-    /// <param name="template">Template from which extraction is done</param>
-    /// <returns>List of placeholders</returns>
-    protected IList<string> ExtractPlaceholders(string template);
-
-    /// <summary>
-    /// Extract placeholders from template (TemplateText property)
-    /// </summary>
-    /// <returns>List of placeholders</returns>
-    protected IList<string> ExtractPlaceholders();
-
-    /// <summary>
-    /// Extract recurring section from template
-    /// </summary>
-    /// <param name="template">Template from which extraction is done</param>
-    /// <returns>Recurring template string</returns>
-    protected string ExtractRecurringTemplate(string template);
-
-    /// <summary>
-    /// Extract recurring section from template (TemplateText property)
-    /// </summary>
-    /// <returns>Recurring template string</returns>
-    protected string ExtractRecurringTemplate();
 }

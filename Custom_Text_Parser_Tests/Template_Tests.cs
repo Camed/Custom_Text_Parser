@@ -17,7 +17,7 @@ public class Template_Tests
         var expectedResult = new List<string> { "OriginalPostingAmount", "OriginalCurrency" };
 
         // Act
-        var placeholders = template.ExtractPlaceholders();
+        var placeholders = template.Placeholders;
 
         // Assert
         placeholders.Should().BeEquivalentTo(
@@ -29,14 +29,12 @@ public class Template_Tests
     [Fact]
     public void ExtractRecurringTemplate_ShouldReturnCorrectTemplate_WhenTemplateIsValid()
     {
-        // Arrange
+        // Arrange & Act
         string templateText = "Start{{RecurringStart}}RecurringContent{{RecurringEnd}}End";
         var template = new Template(templateText);
+        var recurringTemplate = template.RecurringTemplate;
 
         var expectedResult = "RecurringContent";
-
-        // Act
-        var recurringTemplate = template.ExtractRecurringTemplate();
 
         // Assert
         recurringTemplate.Should().Be(expectedResult, because: "The template should correctly extract recurring section");
@@ -45,12 +43,11 @@ public class Template_Tests
     [Fact]
     public void ExtractPlaceholders_ShouldReturnEmptyList_WhenNoPlaceholdersInTemplate()
     {
-        // Arrange
+        // Arrange & Act
         string templateText = "Template without placeholders";
         var template = new Template(templateText);
 
-        // Act
-        var placeholders = template.ExtractPlaceholders();
+        var placeholders = template.Placeholders;
 
         // Assert
         placeholders.Should().BeEmpty(because: "The template does not contain any placeholders");
@@ -59,12 +56,11 @@ public class Template_Tests
     [Fact]
     public void ExtractRecurringTemplate_ShouldReturnEmptyString_WhenNoRecurringSection()
     {
-        // Arrange 
+        // Arrange & Act
         string templateText = "No recurring section in this {{Template}}";
         var template = new Template(templateText);
 
-        // Act
-        var recurringTemplate = template.ExtractRecurringTemplate();
+        var recurringTemplate = template.RecurringTemplate;
 
         // Assert
         recurringTemplate.Should().BeEmpty(because: "The template does not containt a recurring section");
@@ -73,12 +69,10 @@ public class Template_Tests
     [Fact]
     public void ExtractPlaceholders_ShouldReturnDefaultKeywordValues_WhenIncludeDefaultPlaceholdersIsTrue()
     {
-        // Arrange
+        // Arrange & Act
         string templateText = "Template without placeholders";
         var template = new Template(templateText, true);
-
-        // Act
-        var placeholders = template.ExtractPlaceholders();
+        var placeholders = template.Placeholders;
 
         // Assert
         placeholders.Should().BeEquivalentTo(

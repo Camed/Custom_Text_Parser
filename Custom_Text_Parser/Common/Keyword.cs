@@ -9,7 +9,7 @@ namespace Custom_Text_Parser.Common;
 public class Keyword : IKeyword
 {
     public KeywordType KeywordType { get; private set; }
-    public string? KeywordValue { get; private set; }
+    public string KeywordValue { get; private set; }
     private Keyword(KeywordType type)
     {
         KeywordType = type;

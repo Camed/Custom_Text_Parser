@@ -22,64 +22,42 @@ public class Parser : IParser
     public Dictionary<string, List<string>> Parse(string content, ITemplate template)
     {
         var result = new Dictionary<string, List<string>>();
-        try
+        if(string.IsNullOrEmpty(content))
         {
-            string regex = BuildRegexFromTemplate(template.TemplateText, template.Placeholders);
+            return result;
+        }
+        string regex = BuildRegexFromTemplate(template.TemplateText, template.Placeholders);
 
-            // I had issues when \r\n and \n were in content, so I've decided to just replace these.
-            // Might cause some performance issues, so to be changed in the future
-            var contentClone = content.Replace("\r\n", "{{NEWLINE}}").Replace("\n", "{{NEWLINE}}");
+        // I had issues when \r\n and \n were in content, so I've decided to just replace these.
+        // Might cause some performance issues, so to be changed in the future
+        var contentClone = content.Replace("\r\n", "{{NEWLINE}}").Replace("\n", "{{NEWLINE}}");
 
-            try
+        var matches = Regex.Matches(contentClone, regex, RegexOptions.Singleline);
+        if (!matches.Any())
+        {
+            throw new ParsingException();
+        }
+        foreach (Match match in matches)
+        {
+            var recurringMatches = match.Groups["RecurringSection"].Captures;
+            foreach (var placeholder in template.OuterPlaceholders)
             {
-                var matches = Regex.Matches(contentClone, regex, RegexOptions.Singleline);
-                if (!matches.Any())
+                if (match.Groups[placeholder].Success)
                 {
-                    if (string.IsNullOrEmpty(content))
-                    {
-                        return [];
-                    }
-                    throw new ParsingException();
+                    AddResult(ref result, placeholder, match.Groups[placeholder]
+                        .Value
+                        .Trim()
+                        .Replace("{{NEWLINE}}", "\n")
+                        );
                 }
-                foreach (Match match in matches)
+                foreach (Capture recurringMatch in recurringMatches)
                 {
-                    var recurringMatches = match.Groups["RecurringSection"].Captures;
-                    foreach (var placeholder in template.OuterPlaceholders)
-                    {
-                        if (match.Groups[placeholder].Success)
-                        {
-                            AddResult(ref result, placeholder, match.Groups[placeholder]
-                                .Value
-                                .Trim()
-                                .Replace("{{NEWLINE}}", "\n")
-                                );
-                        }
-                    }
-
-                    foreach (Capture recurringMatch in recurringMatches)
-                    {
-                        GetRecurringData(ref result, recurringMatch.Value, template);
-                    }
-                }
-
-                return result;
-            }
-            catch(Exception ex)
-            {
-                if(ex is ArgumentException || ex is ArgumentNullException || ex is ArgumentOutOfRangeException || ex is ParsingException)
-                {
-                    throw new ParsingException(content, regex);
-                }
-                else
-                {
-                    throw;
+                    GetRecurringData(ref result, recurringMatch.Value, template);
                 }
             }
+
         }
-        catch
-        {
-            throw;
-        }
+        return result;
     }
 
     /// <summary>
@@ -234,6 +212,4 @@ public class Parser : IParser
             throw;
         }
     }
-
-
 }

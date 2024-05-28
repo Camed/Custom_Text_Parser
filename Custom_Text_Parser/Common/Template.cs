@@ -31,7 +31,7 @@ public class Template : ITemplate
     /// Extraction of all placeholders within template provided earlier.
     /// </summary>
     /// <returns>List of extracted placeholders.</returns>
-    public IList<string> ExtractPlaceholders()
+    private IList<string> ExtractPlaceholders()
     {
         var result = new List<string>();
         if (IncludeDefaultPlaceholders)
@@ -51,14 +51,14 @@ public class Template : ITemplate
     /// </summary>
     /// <param name="template">Template from which placeholders should be extracted.</param>
     /// <returns>List of extracted placeholders.</returns>
-    public IList<string> ExtractPlaceholders(string template)
+    private IList<string> ExtractPlaceholders(string template)
     {
         ArgumentNullException.ThrowIfNull(template);
         var matches = Regex.Matches(template, @"{{(.*?)}}", RegexOptions.Singleline);
         return matches.Select(m => m.Groups[1].Value).Distinct().ToList();
     }
 
-    public string ExtractRecurringTemplate()
+    private string ExtractRecurringTemplate()
     {
         return ExtractRecurringTemplate(TemplateText);
     }
@@ -67,7 +67,7 @@ public class Template : ITemplate
     /// </summary>
     /// <param name="template">Template from which to extract</param>
     /// <returns>Recurring data within the template</returns>
-    public string ExtractRecurringTemplate(string template)
+    private string ExtractRecurringTemplate(string template)
     {
         string pattern = $"{Keyword.GetRegexPattern(KeywordType.RecurringStart)}(.*?){Keyword.GetRegexPattern(KeywordType.RecurringEnd)}";
         var match = Regex.Match(TemplateText, pattern, RegexOptions.Singleline);
