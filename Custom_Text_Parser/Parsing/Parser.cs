@@ -35,6 +35,10 @@ public class Parser : IParser
                 var matches = Regex.Matches(contentClone, regex, RegexOptions.Singleline);
                 if (!matches.Any())
                 {
+                    if (string.IsNullOrEmpty(content))
+                    {
+                        return [];
+                    }
                     throw new ParsingException();
                 }
                 foreach (Match match in matches)
@@ -211,19 +215,19 @@ public class Parser : IParser
         }
         catch (ArgumentNullException ex)
         {
-            throw new ArgumentNullException($"MT940Parser: Value of {nameof(placeholder)} is null.", ex);
+            throw new ArgumentNullException($"Parser: Value of {nameof(placeholder)} is null.", ex);
         }
         catch (ArgumentException ex)
         {
-            throw new ArgumentException($"MT940Parser: Value of {nameof(placeholder)} is incorrect", ex);
+            throw new ArgumentException($"Parser: Value of {nameof(placeholder)} is incorrect", ex);
         }
         catch (OverflowException ex)
         {
-            throw new OverflowException($"MT940Parser: Couldn't parse {nameof(placeholder)}. Overflow.", ex);
+            throw new OverflowException($"Parser: Couldn't parse {nameof(placeholder)}. Overflow.", ex);
         }
         catch (InvalidOperationException ex)
         {
-            throw new InvalidOperationException($"MT940Parser: Invalid operation on {nameof(placeholder)}.", ex);
+            throw new InvalidOperationException($"Parser: Invalid operation on {nameof(placeholder)}.", ex);
         }
         catch
         {

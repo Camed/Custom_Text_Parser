@@ -69,4 +69,34 @@ public class Template_Tests
         // Assert
         recurringTemplate.Should().BeEmpty(because: "The template does not containt a recurring section");
     }
+
+    [Fact]
+    public void ExtractPlaceholders_ShouldReturnDefaultKeywordValues_WhenIncludeDefaultPlaceholdersIsTrue()
+    {
+        // Arrange
+        string templateText = "Template without placeholders";
+        var template = new Template(templateText, true);
+
+        // Act
+        var placeholders = template.ExtractPlaceholders();
+
+        // Assert
+        placeholders.Should().BeEquivalentTo(
+                new List<string>()
+                {
+                    "PostingKey",
+                    "PostingDate",
+                    "OrginalPostingAmount",
+                    "OrginalCurrency",
+                    "NameRecipient",
+                    "Use",
+                    "SortCodeRecipient",
+                    "AccountRecipient",
+                    "PostingText",
+                    "BusinessTransactionCode",
+                    "RecurringStart",
+                    "RecurringEnd"
+                }
+            );
+    }
 }

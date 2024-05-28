@@ -14,13 +14,16 @@ public class Template : ITemplate
     public IList<string> OuterPlaceholders { get; private set; }
     public IList<string> RecurringPlaceholders { get; private set; }
     public string RecurringTemplate { get; private set; }
-    public Template(string templateText)
+    public bool IncludeDefaultPlaceholders { get; private set; }
+
+    public Template(string templateText, bool includeDefaultPlaceholders = false)
     {
         TemplateText = templateText.Replace("\r\n", "\n");
         Placeholders = ExtractPlaceholders(templateText);
         RecurringTemplate = ExtractRecurringTemplate(templateText);
         RecurringPlaceholders = ExtractPlaceholders(RecurringTemplate);
         OuterPlaceholders = Placeholders.Except(RecurringPlaceholders).ToList();
+        IncludeDefaultPlaceholders = includeDefaultPlaceholders;
     }
 
 
@@ -30,7 +33,17 @@ public class Template : ITemplate
     /// <returns>List of extracted placeholders.</returns>
     public IList<string> ExtractPlaceholders()
     {
-        return ExtractPlaceholders(TemplateText);
+        var result = new List<string>();
+        if (IncludeDefaultPlaceholders)
+        {
+            foreach(KeywordType enumerable in Enum.GetValues(typeof(KeywordType)).Cast<KeywordType>())
+            {
+                if(enumerable != KeywordType.None)
+                    result.Add(enumerable.ToString());
+            }
+        }
+        result.AddRange(ExtractPlaceholders(TemplateText));
+        return result;
     }
 
     /// <summary>

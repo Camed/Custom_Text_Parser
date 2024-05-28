@@ -11,7 +11,7 @@ namespace Custom_Text_Parser;
 public class Parser_Tests
 {
     [Fact]
-    public void Parse_ShouldExtractData_WhenGivenValidInput()
+    public void Parser_ShouldExtractData_WhenGivenValidInput()
     {
         // Arrange
         string input = "Account: 123456789\nDate: 2022-01-01";
@@ -32,7 +32,7 @@ public class Parser_Tests
     }
 
     [Fact]
-    public void Parse_ShouldIdentifyAndProcess_RecurringSections()
+    public void Parser_ShouldIdentifyAndProcess_RecurringSections()
     {
         // Arrange
         var template = Substitute.For<ITemplate>();
@@ -71,6 +71,8 @@ public class Parser_Tests
         IList<string> placeholders = new List<string> { "AccountRecipient", "PostingDate" };
         string expectedRegex = "^Account: (?<AccountRecipient>.+?){{NEWLINE}}Date: (?<PostingDate>.+?)$";
         Type type = typeof(Parser);
+
+        // BuildRegexFromTemplate is a private static method within 'Parser' class. We cannot access it directly, hence we use reflection here.
         MethodInfo method = type.GetMethod("BuildRegexFromTemplate", BindingFlags.NonPublic | BindingFlags.Static);
 
         method.Should().NotBeNull("because the method needs to be tested to ensure it constructs regex patterns correctly");
@@ -165,7 +167,149 @@ public class Parser_Tests
     }
 
     [Fact]
-    public void Parse_ShouldHandleEmptyContent()
+    public void Parser_Should_ProperlyParse_PKOPB_MT940()
+    {
+        //Arrange
+        var templateText =
+            """
+            :20:{{TYPE}}
+            :25:{{IBAN}}
+            :28C:{{ORDER_NUMBER}}
+            :60F:{{OPENING_BALANCE}}
+            {{RecurringStart}}:61:{{OPERATION_DESCRIPTION}}//{{OPERATION_NUMBER}}
+            {{OZSI_CODE}} {{OPERATION_TYPE}}
+            :86:{{CONST_02000}}
+            ~20{{TITLE_1}}
+            ~21{{TITLE_2}}
+            ~22{{TITLE_3}}
+            ~23{{TITLE_4}}
+            ~24{{TITLE_5}}
+            ~25{{TITLE_6}}
+            ~30{{CONTRACTOR_BANK_NUMBER}}
+            ~31{{CONTRACTOR_ACCOUNT_NUMBER}}
+            ~32{{CONTRACTOR_NAME_ADDRESS_1}}
+            ~33{{CONTRACTOR_NAME_ADDRESS_2}}
+            ~38{{CONTRACTOR_IBAN}}
+            ~60{{DOCUMENT_DATE}}
+            ~63{{SWRK}}{{RecurringEnd}}
+            :62F:{{ENDING_BALANCE}}
+            :64:{{CURRENT_BALANCE}}
+            """;
+
+        var mt940_text =
+            """
+            :20:MT940
+            :25:/PL44102055610000380209739045
+            :28C:1
+            :60F:D210526PLN2671,79
+            :61:2105260526D25,00N152NONREF//6460500500000513
+            152 0
+            :86:020~00152
+            ~20PRZELEW SRODKÓW
+            ~21˙
+            ~22˙
+            ~23˙
+            ~24˙
+            ~25˙
+            ~3010205561
+            ~319000361245650140
+            ~32FSDFSFDSF
+            ~33˙
+            ~38PL50102055619000361245650240
+            ~60˙
+            ~63˙
+            :61:2105260526D434,00N210NONREF//6460502100001611
+            210 0
+            :86:020~00210
+            ~20P 85100158550 0 PI
+            ~21T-23
+            ~22˙
+            ~23˙
+            ~24˙
+            ~25˙
+            ~3010100071
+            ~312223147244000000
+            ~32DRUGI MAZOWIECKI URZˇD SKAR
+            ~33BOWY WARSZAWA
+            ~38PL32101000712223147254000000
+            ~60˙
+            ~63˙
+            :61:2105260526D205,18N107NONREF//6463600500000059
+            107 0
+            :86:020~00107
+            ~20PRZELEW SRODKÓW
+            ~21˙
+            ~22˙
+            ~23˙
+            ~24˙
+            ~25˙
+            ~30˙
+            ~31˙
+            ~32IRENA KOWALSKA
+            ~33˙
+            ~38FR7630004013280001089882824
+            ~60˙
+            ~63˙
+            :61:2105260526D0,75N108NONREF//6463600500000060
+            108 0
+            :86:020~00108
+            ~20KOSZTY SR21IP00012613DS
+            ~21˙
+            ~22˙
+            ~23˙
+            ~24˙
+            ~25˙
+            ~30˙
+            ~31˙
+            ~32IRENA KOWALSKA
+            ~33˙
+            ~38FR7630004013280001089882824
+            ~60˙
+            ~63˙
+            :62F:D210531PLN3336,72
+            :64:C210531PLN91662,28
+            """;
+
+        var MT940Template = new Template(templateText);
+        var parser = new Parser();
+
+        var expected = new Dictionary<string, List<string>>
+        {
+            { "TYPE", new List<string> { "MT940" } },
+            { "IBAN", new List<string> { "/PL44102055610000380209739045" } },
+            { "ORDER_NUMBER", new List<string> { "1" } },
+            { "OPENING_BALANCE", new List<string> { "D210526PLN2671,79" } },
+            { "OPERATION_DESCRIPTION", new List<string> { "2105260526D25,00N152NONREF", "2105260526D434,00N210NONREF", "2105260526D205,18N107NONREF", "2105260526D0,75N108NONREF" } },
+            { "OPERATION_NUMBER", new List<string> { "6460500500000513", "6460502100001611", "6463600500000059", "6463600500000060" } },
+            { "OZSI_CODE", new List<string> { "152", "210", "107", "108" } },
+            { "OPERATION_TYPE", new List<string> { "0", "0", "0", "0" } },
+            { "CONST_02000", new List<string> { "020~00152", "020~00210", "020~00107", "020~00108" } },
+            { "TITLE_1", new List<string> { "PRZELEW SRODKÓW", "P 85100158550 0 PI", "PRZELEW SRODKÓW", "KOSZTY SR21IP00012613DS" } },
+            { "TITLE_2", new List<string> { "˙", "T-23", "˙", "˙" } },
+            { "TITLE_3", new List<string> { "˙", "˙", "˙", "˙" } },
+            { "TITLE_4", new List<string> { "˙", "˙", "˙", "˙" } },
+            { "TITLE_5", new List<string> { "˙", "˙", "˙", "˙" } },
+            { "TITLE_6", new List<string> { "˙", "˙", "˙", "˙" } },
+            { "CONTRACTOR_BANK_NUMBER", new List<string> { "10205561", "10100071", "˙", "˙" } },
+            { "CONTRACTOR_ACCOUNT_NUMBER", new List<string> { "9000361245650140", "2223147244000000", "˙", "˙" } },
+            { "CONTRACTOR_NAME_ADDRESS_1", new List<string> { "FSDFSFDSF", "DRUGI MAZOWIECKI URZˇD SKAR", "IRENA KOWALSKA", "IRENA KOWALSKA" } },
+            { "CONTRACTOR_NAME_ADDRESS_2", new List<string> { "˙", "BOWY WARSZAWA", "˙", "˙" } },
+            { "CONTRACTOR_IBAN", new List<string> { "PL50102055619000361245650240", "PL32101000712223147254000000", "FR7630004013280001089882824", "FR7630004013280001089882824" } },
+            { "DOCUMENT_DATE", new List<string> { "˙", "˙", "˙", "˙" } },
+            { "SWRK", new List<string> { "˙", "˙", "˙", "˙" } },
+            { "ENDING_BALANCE", new List<string> { "D210531PLN3336,72" } },
+            { "CURRENT_BALANCE", new List<string> { "C210531PLN91662,28" } }
+        };
+
+        // Act
+        var result = parser.Parse(mt940_text, MT940Template);
+
+        // Assert
+        result.Should().BeEquivalentTo(expected, because: "the paraser should properly parse PKOBP MT940 file.");
+
+    }
+    [Fact]
+    public void Parser_ShouldHandleEmptyContent()
     {
         // Arrange
         var template = Substitute.For<ITemplate>();
@@ -181,7 +325,7 @@ public class Parser_Tests
     }
 
     [Fact]
-    public void Parse_ShoundThrowParsingException_WhenPlaceholdersDoNotMatch()
+    public void Parser_ShoundThrowParsingException_WhenPlaceholdersDoNotMatch()
     {
         // Arrange
         string input = "Mismatched input data";

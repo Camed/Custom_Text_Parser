@@ -6,6 +6,10 @@
 public interface ITemplate
 {
     /// <summary>
+    /// Determines whether default placeholders (based on KeywordType) are included.
+    /// </summary>
+    public bool IncludeDefaultPlaceholders { get; }
+    /// <summary>
     /// Text of the template
     /// </summary>
     public string TemplateText { get; set; }
