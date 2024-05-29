@@ -13,7 +13,7 @@ public class Keyword : IKeyword
     private Keyword(KeywordType type)
     {
         KeywordType = type;
-        KeywordValue = Enum.GetName(typeof(KeywordType), KeywordType);
+        KeywordValue = Enum.GetName(typeof(KeywordType), KeywordType) ?? throw new ArgumentException();
     }
 
     public static Keyword Create(KeywordType keywordType)

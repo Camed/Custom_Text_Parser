@@ -25,7 +25,7 @@ public class ParserService : IParserService
     /// <exception cref="InvalidOperationException"></exception>
     public Dictionary<string, List<string>> ParseContent(string content, string templateName)
     {
-        if(!_templates.TryGetValue(templateName, out ITemplate template))
+        if(!_templates.TryGetValue(templateName, out ITemplate? template))
         {
             throw new ArgumentException($"Template \"{content}\" not found.");
         }

@@ -73,7 +73,10 @@ public class Parser_Tests
         Type type = typeof(Parser);
 
         // BuildRegexFromTemplate is a private static method within 'Parser' class. We cannot access it directly, hence we use reflection here.
+
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
         MethodInfo method = type.GetMethod("BuildRegexFromTemplate", BindingFlags.NonPublic | BindingFlags.Static);
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 
         method.Should().NotBeNull("because the method needs to be tested to ensure it constructs regex patterns correctly");
 
@@ -90,7 +93,7 @@ public class Parser_Tests
         string mbank_MT940_Template =
         """
         :20:{{Date}}
-        :25:{{IBAN}}
+        :25:{{IBAN}}W?a?l?u?t?a?
         :28C:{{StatementNumber}}
         :60F:{{OpeningBalance}}
         {{RecurringStart}}:61:{{Transaction}}//{{BankData}}
