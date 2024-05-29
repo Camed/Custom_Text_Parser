@@ -93,7 +93,7 @@ public class Parser_Tests
         string mbank_MT940_Template =
         """
         :20:{{Date}}
-        :25:{{IBAN}}W?a?l?u?t?a?
+        :25:{{IBAN}}
         :28C:{{StatementNumber}}
         :60F:{{OpeningBalance}}
         {{RecurringStart}}:61:{{Transaction}}//{{BankData}}
