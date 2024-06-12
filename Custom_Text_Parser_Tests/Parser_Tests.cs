@@ -5,6 +5,7 @@ using Custom_Text_Parser.Interfaces;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Custom_Text_Parser.Exceptions;
+using System.Linq;
 
 namespace Custom_Text_Parser;
 
@@ -17,9 +18,9 @@ public class Parser_Tests
         string input = "Account: 123456789\nDate: 2022-01-01";
         var template = Substitute.For<ITemplate>();
         template.TemplateText.Returns("Account: {{AccountRecipient}}\nDate: {{PostingDate}}");
-        template.Placeholders.Returns(new List<string> { "AccountRecipient", "PostingDate" });
-        template.OuterPlaceholders.Returns(new List<string> { "AccountRecipient", "PostingDate" });
-        template.RecurringPlaceholders.Returns(new List<string>());
+        template.Placeholders.Returns(new List<IPlaceholder> { new Placeholder("AccountRecipient"), new Placeholder("PostingDate") });
+        template.OuterPlaceholders.Returns(new List<IPlaceholder> { new Placeholder("AccountRecipient"), new Placeholder("PostingDate") });
+        template.RecurringPlaceholders.Returns(new List<IPlaceholder>());
 
         var parser = new Parser();
 
@@ -27,8 +28,8 @@ public class Parser_Tests
         var result = parser.Parse(input, template);
 
         // Assert
-        result["AccountRecipient"].Should().ContainSingle().Which.Should().Be("123456789", because: "it should correctly extract the account number.");
-        result["PostingDate"].Should().ContainSingle().Which.Should().Be("2022-01-01", because: "it should correctly extract the posting date.");
+        result[new Placeholder("AccountRecipient")].Should().ContainSingle().Which.Should().Be("123456789", because: "it should correctly extract the account number.");
+        result[new Placeholder("PostingDate")].Should().ContainSingle().Which.Should().Be("2022-01-01", because: "it should correctly extract the posting date.");
     }
 
     [Fact]
@@ -37,9 +38,9 @@ public class Parser_Tests
         // Arrange
         var template = Substitute.For<ITemplate>();
         template.TemplateText.Returns("Transactions Begin{{RecurringStart}}Transaction: {{PostingKey}}{{RecurringEnd}}Transactions End");
-        template.Placeholders.Returns(new List<string>() { "PostingKey" });
-        template.OuterPlaceholders.Returns(new List<string>() { });
-        template.RecurringPlaceholders.Returns(new List<string>() { "PostingKey" });
+        template.Placeholders.Returns(new List<IPlaceholder>() { new Placeholder("PostingKey") });
+        template.OuterPlaceholders.Returns(new List<IPlaceholder>() { });
+        template.RecurringPlaceholders.Returns(new List<IPlaceholder>() { new Placeholder("PostingKey") });
         template.RecurringTemplate.Returns("Transaction: {{PostingKey}}");
 
         var parser = new Parser();
@@ -49,9 +50,9 @@ public class Parser_Tests
             Transactions BeginTransaction: 123Transaction: 456Transaction: 789Transactions End
             """;
 
-        var expected = new Dictionary<string, List<string>>
+        var expected = new Dictionary<IPlaceholder, List<string>>
         {
-            { "PostingKey", new List<string>() {"123", "456", "789"} }
+            { new Placeholder("PostingKey"), new List<string>() {"123", "456", "789"} }
         };
 
         // Act
@@ -68,7 +69,7 @@ public class Parser_Tests
     {
         // Arrange
         string templateText = "Account: {{AccountRecipient}}\nDate: {{PostingDate}}";
-        IList<string> placeholders = new List<string> { "AccountRecipient", "PostingDate" };
+        IList<IPlaceholder> placeholders = new List<IPlaceholder> { new Placeholder("AccountRecipient"), new Placeholder("PostingDate") };
         string expectedRegex = "^Account: (?<AccountRecipient>.+?){{NEWLINE}}Date: (?<PostingDate>.+?)$";
         Type type = typeof(Parser);
 
@@ -136,16 +137,16 @@ public class Parser_Tests
         :64:C050112PLN18667,79
         """;
 
-        var expected = new Dictionary<string, List<string>>
+        var expected = new Dictionary<IPlaceholder, List<string>>
         {
-            { "Date", new List<string> { "ST050112CYC/1" } },
-            { "IBAN", new List<string> { "PL06114010100000111111001001" } },
-            { "StatementNumber", new List<string> { "8/1" } },
-            { "OpeningBalance", new List<string> { "C050112PLN60213,04" } },
-            { "Transaction", new List<string> { "0710091009DN2,50NCHGNONREF", "0501120112DN449,77NTRFSP300", "0501120112DN2,50NCHGNONREF", "0501120112DN76,03NTRFUS1234", "0501120112DN2,50NCHGNONREF", "0710091009DN4,03NTRFREFER" } },
-            { "BankData", new List<string> { "BR07282102000059", "BR05012139000001", "BR05012139000003", "BR05012139000003", "BR05012139000004", "BR07282102000060" } },
-            { "AdditionalInformation", new List<string> { "824-OPŁ. ZA PRZEL. ELIXIR MT", "944-PRZEL.KRAJ.WYCH.MT.ELX", "824-OPŁ. ZA PRZEL. ELIXIR MT", "945-PRZEL.KRAJ.WYCH.MT.ELX.ZUS", "824-OPŁ. ZA PRZEL. ELIXIR MT", "945-PRZEL.KRAJ.WYCH.MT.ELX.ZUS" } },
-            { "TransactionDetails", new List<string> 
+            { new Placeholder("Date"), new List<string> { "ST050112CYC/1" } },
+            { new Placeholder("IBAN"), new List<string> { "PL06114010100000111111001001" } },
+            { new Placeholder("StatementNumber"), new List<string> { "8/1" } },
+            { new Placeholder("OpeningBalance"), new List<string> { "C050112PLN60213,04" } },
+            { new Placeholder("Transaction"), new List<string> { "0710091009DN2,50NCHGNONREF", "0501120112DN449,77NTRFSP300", "0501120112DN2,50NCHGNONREF", "0501120112DN76,03NTRFUS1234", "0501120112DN2,50NCHGNONREF", "0710091009DN4,03NTRFREFER" } },
+            { new Placeholder("BankData"), new List<string> { "BR07282102000059", "BR05012139000001", "BR05012139000003", "BR05012139000003", "BR05012139000004", "BR07282102000060" } },
+            { new Placeholder("AdditionalInformation"), new List<string> { "824-OPŁ. ZA PRZEL. ELIXIR MT", "944-PRZEL.KRAJ.WYCH.MT.ELX", "824-OPŁ. ZA PRZEL. ELIXIR MT", "945-PRZEL.KRAJ.WYCH.MT.ELX.ZUS", "824-OPŁ. ZA PRZEL. ELIXIR MT", "945-PRZEL.KRAJ.WYCH.MT.ELX.ZUS" } },
+            { new Placeholder("TransactionDetails"), new List<string> 
                 { 
                     "824 OPŁATA ZA PRZELEW ELIXIR; TNR: 145271016138274.040001", 
                     "944 CompanyNet Przelew krajowy; na rach.: 35109010560000000006093440; dla: PHU Test ul.Dolna\n1 00-950 Warszawa; tyt.: fv 100/2007; TNR: 145271016138277.020002",
@@ -155,8 +156,8 @@ public class Parser_Tests
                     "945 CompanyNet PRZELEW ZUS; NA RACH.: 73101010230000261395300000;\nRODZAJ SKŁADKI: FPIFGSP; DEKLARACJA: D 200708 01; NIP:\n5555555555; ID UZUP.: R 011834870; NR DEC/UM/TW.: ST 4.3 NUMER\nDC; REF. KLIENTA: REFER; TNR: 145271016138274.050002" 
                 } 
             },
-            { "EndingBalance", new List<string> { "C050112PLN18667,79" } },
-            { "AvailableBalance", new List<string> { "C050112PLN18667,79" } }
+            { new Placeholder("EndingBalance"), new List<string> { "C050112PLN18667,79" } },
+            { new Placeholder("AvailableBalance"), new List<string> { "C050112PLN18667,79" } }
         };
 
         var MT940Template = new Template(mbank_MT940_Template);
@@ -276,32 +277,32 @@ public class Parser_Tests
         var MT940Template = new Template(templateText);
         var parser = new Parser();
 
-        var expected = new Dictionary<string, List<string>>
+        var expected = new Dictionary<IPlaceholder, List<string>>
         {
-            { "TYPE", new List<string> { "MT940" } },
-            { "IBAN", new List<string> { "/PL44102055610000380209739045" } },
-            { "ORDER_NUMBER", new List<string> { "1" } },
-            { "OPENING_BALANCE", new List<string> { "D210526PLN2671,79" } },
-            { "OPERATION_DESCRIPTION", new List<string> { "2105260526D25,00N152NONREF", "2105260526D434,00N210NONREF", "2105260526D205,18N107NONREF", "2105260526D0,75N108NONREF" } },
-            { "OPERATION_NUMBER", new List<string> { "6460500500000513", "6460502100001611", "6463600500000059", "6463600500000060" } },
-            { "OZSI_CODE", new List<string> { "152", "210", "107", "108" } },
-            { "OPERATION_TYPE", new List<string> { "0", "0", "0", "0" } },
-            { "CONST_02000", new List<string> { "020~00152", "020~00210", "020~00107", "020~00108" } },
-            { "TITLE_1", new List<string> { "PRZELEW SRODKÓW", "P 85100158550 0 PI", "PRZELEW SRODKÓW", "KOSZTY SR21IP00012613DS" } },
-            { "TITLE_2", new List<string> { "˙", "T-23", "˙", "˙" } },
-            { "TITLE_3", new List<string> { "˙", "˙", "˙", "˙" } },
-            { "TITLE_4", new List<string> { "˙", "˙", "˙", "˙" } },
-            { "TITLE_5", new List<string> { "˙", "˙", "˙", "˙" } },
-            { "TITLE_6", new List<string> { "˙", "˙", "˙", "˙" } },
-            { "CONTRACTOR_BANK_NUMBER", new List<string> { "10205561", "10100071", "˙", "˙" } },
-            { "CONTRACTOR_ACCOUNT_NUMBER", new List<string> { "9000361245650140", "2223147244000000", "˙", "˙" } },
-            { "CONTRACTOR_NAME_ADDRESS_1", new List<string> { "FSDFSFDSF", "DRUGI MAZOWIECKI URZˇD SKAR", "IRENA KOWALSKA", "IRENA KOWALSKA" } },
-            { "CONTRACTOR_NAME_ADDRESS_2", new List<string> { "˙", "BOWY WARSZAWA", "˙", "˙" } },
-            { "CONTRACTOR_IBAN", new List<string> { "PL50102055619000361245650240", "PL32101000712223147254000000", "FR7630004013280001089882824", "FR7630004013280001089882824" } },
-            { "DOCUMENT_DATE", new List<string> { "˙", "˙", "˙", "˙" } },
-            { "SWRK", new List<string> { "˙", "˙", "˙", "˙" } },
-            { "ENDING_BALANCE", new List<string> { "D210531PLN3336,72" } },
-            { "CURRENT_BALANCE", new List<string> { "C210531PLN91662,28" } }
+            { new Placeholder("TYPE"), new List<string> { "MT940" } },
+            { new Placeholder("IBAN"), new List<string> { "/PL44102055610000380209739045" } },
+            { new Placeholder("ORDER_NUMBER"), new List<string> { "1" } },
+            { new Placeholder("OPENING_BALANCE"), new List<string> { "D210526PLN2671,79" } },
+            { new Placeholder("OPERATION_DESCRIPTION"), new List<string> { "2105260526D25,00N152NONREF", "2105260526D434,00N210NONREF", "2105260526D205,18N107NONREF", "2105260526D0,75N108NONREF" } },
+            { new Placeholder("OPERATION_NUMBER"), new List<string> { "6460500500000513", "6460502100001611", "6463600500000059", "6463600500000060" } },
+            { new Placeholder("OZSI_CODE"), new List<string> { "152", "210", "107", "108" } },
+            { new Placeholder("OPERATION_TYPE"), new List<string> { "0", "0", "0", "0" } },
+            { new Placeholder("CONST_02000"), new List<string> { "020~00152", "020~00210", "020~00107", "020~00108" } },
+            { new Placeholder("TITLE_1"), new List<string> { "PRZELEW SRODKÓW", "P 85100158550 0 PI", "PRZELEW SRODKÓW", "KOSZTY SR21IP00012613DS" } },
+            { new Placeholder("TITLE_2"), new List<string> { "˙", "T-23", "˙", "˙" } },
+            { new Placeholder("TITLE_3"), new List<string> { "˙", "˙", "˙", "˙" } },
+            { new Placeholder("TITLE_4"), new List<string> { "˙", "˙", "˙", "˙" } },
+            { new Placeholder("TITLE_5"), new List<string> { "˙", "˙", "˙", "˙" } },
+            { new Placeholder("TITLE_6"), new List<string> { "˙", "˙", "˙", "˙" } },
+            { new Placeholder("CONTRACTOR_BANK_NUMBER"), new List<string> { "10205561", "10100071", "˙", "˙" } },
+            { new Placeholder("CONTRACTOR_ACCOUNT_NUMBER"), new List<string> { "9000361245650140", "2223147244000000", "˙", "˙" } },
+            { new Placeholder("CONTRACTOR_NAME_ADDRESS_1"), new List<string> { "FSDFSFDSF", "DRUGI MAZOWIECKI URZˇD SKAR", "IRENA KOWALSKA", "IRENA KOWALSKA" } },
+            { new Placeholder("CONTRACTOR_NAME_ADDRESS_2"), new List<string> { "˙", "BOWY WARSZAWA", "˙", "˙" } },
+            { new Placeholder("CONTRACTOR_IBAN"), new List<string> { "PL50102055619000361245650240", "PL32101000712223147254000000", "FR7630004013280001089882824", "FR7630004013280001089882824" } },
+            { new Placeholder("DOCUMENT_DATE"), new List<string> { "˙", "˙", "˙", "˙" } },
+            { new Placeholder("SWRK"), new List<string> { "˙", "˙", "˙", "˙" } },
+            { new Placeholder("ENDING_BALANCE"), new List<string> { "D210531PLN3336,72" } },
+            { new Placeholder("CURRENT_BALANCE"), new List<string> { "C210531PLN91662,28" } }
         };
 
         // Act
@@ -317,7 +318,7 @@ public class Parser_Tests
         // Arrange
         var template = Substitute.For<ITemplate>();
         template.TemplateText.Returns("Account: {{AccountRecipient}}\nDate: {{PostingDate}}");
-        template.Placeholders.Returns(new List<string>() { "AccountRecipient", "PostingDate" });
+        template.Placeholders.Returns(new List<IPlaceholder>() { new Placeholder("AccountRecipient"), new Placeholder("PostingDate") });
         var parser = new Parser();
 
         // Act
@@ -335,7 +336,7 @@ public class Parser_Tests
         var template = Substitute.For<ITemplate>();
 
         template.TemplateText.Returns(":Test:{{MismatchedPlaceholder}}");
-        template.Placeholders.Returns(new List<string>() { "MismatchedPlaceholder" });
+        template.Placeholders.Returns(new List<IPlaceholder>() { new Placeholder("MismatchedPlaceholder") });
 
         var parser = new Parser();
 

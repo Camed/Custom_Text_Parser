@@ -22,15 +22,15 @@ public interface ITemplate
     /// <summary>
     /// All placeholders within template.
     /// </summary>
-    public IList<string> Placeholders { get; }
+    public IList<IPlaceholder> Placeholders { get; }
 
     /// <summary>
     /// Placeholders outside recurring section
     /// </summary>
-    public IList<string> OuterPlaceholders { get; }
+    public IList<IPlaceholder> OuterPlaceholders { get; }
 
     /// <summary>
     /// Placeholders within recurring section
     /// </summary>
-    public IList<string> RecurringPlaceholders { get; }
+    public IList<IPlaceholder> RecurringPlaceholders { get; }
 }

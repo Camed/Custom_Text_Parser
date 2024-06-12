@@ -19,9 +19,9 @@ public class Parser : IParser
     /// <param name="template">Template to be parsed.</param>
     /// <returns></returns>
     /// <exception cref="ParsingException"></exception>
-    public Dictionary<string, List<string>> Parse(string content, ITemplate template)
+    public Dictionary<IPlaceholder, List<string>> Parse(string content, ITemplate template)
     {
-        var result = new Dictionary<string, List<string>>();
+        var result = new Dictionary<IPlaceholder, List<string>>();
         if(string.IsNullOrEmpty(content))
         {
             return result;
@@ -42,9 +42,9 @@ public class Parser : IParser
             var recurringMatches = match.Groups["RecurringSection"].Captures;
             foreach (var placeholder in template.OuterPlaceholders)
             {
-                if (match.Groups[placeholder].Success)
+                if (match.Groups[placeholder.Name].Success)
                 {
-                    AddResult(ref result, placeholder, match.Groups[placeholder]
+                    AddResult(ref result, placeholder, match.Groups[placeholder.Name]
                         .Value
                         .Trim()
                         .Replace("{{NEWLINE}}", "\n")
@@ -67,7 +67,7 @@ public class Parser : IParser
     /// <param name="content">From where data should be extracted</param>
     /// <param name="template">Based on which template</param>
     /// <exception cref="ParsingException"></exception>
-    private void GetRecurringData(ref Dictionary<string, List<string>> result, string content, ITemplate template)
+    private void GetRecurringData(ref Dictionary<IPlaceholder, List<string>> result, string content, ITemplate template)
     {
         try
         {
@@ -78,9 +78,9 @@ public class Parser : IParser
             {
                 foreach (var placeholder in template.Placeholders)
                 {
-                    if (recurringMatch.Groups[placeholder].Success)
+                    if (recurringMatch.Groups[placeholder.Name].Success)
                     {
-                        AddResult(ref result, placeholder, recurringMatch.Groups[placeholder]
+                        AddResult(ref result, placeholder, recurringMatch.Groups[placeholder.Name]
                             .Value
                             .Trim()
                             .Replace("{{NEWLINE}}", "\n"));
@@ -102,7 +102,7 @@ public class Parser : IParser
     /// <param name="result">Where to add</param>
     /// <param name="placeholder">Under what name</param>
     /// <param name="value">Value to store</param>
-    private void AddResult(ref Dictionary<string, List<string>> result, string placeholder, string value)
+    private void AddResult(ref Dictionary<IPlaceholder, List<string>> result, IPlaceholder placeholder, string value)
     {
         if (!result.ContainsKey(placeholder))
             result[placeholder] = [];
@@ -138,7 +138,7 @@ public class Parser : IParser
     /// <param name="placeholders">List of keywords to be replaced</param>
     /// <returns>Template turned into regular expression</returns>
     /// <exception cref="ArgumentNullException"></exception>
-    private static string BuildRegexFromTemplate(string templateText, IList<string> placeholders)
+    private static string BuildRegexFromTemplate(string templateText, IList<IPlaceholder> placeholders)
     {
         try
         {
@@ -150,8 +150,9 @@ public class Parser : IParser
 
             foreach (var placeholder in placeholders)
             {
-                string placeholderPattern = Regex.Escape("{{" + placeholder + "}}");
-                regex = regex.Replace(placeholderPattern, $"(?<{placeholder}>.+?)");
+                var innerName = placeholder.Name + (placeholder.Length == -1 ? string.Empty : string.Concat(":", placeholder.Length));
+                string placeholderPattern = Regex.Escape("{{" + innerName + "}}");
+                regex = regex.Replace(placeholderPattern, $"(?<{innerName}>.+?)");
             }
 
             regex = regex.Replace("\\ ", " ")

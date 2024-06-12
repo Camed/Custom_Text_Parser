@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Custom_Text_Parser.Parsing;
 using System.Reflection;
+using Custom_Text_Parser.Interfaces;
 
 namespace Custom_Text_Parser;
 
@@ -14,7 +15,7 @@ public class Template_Tests
         string templateText = "Amount: {{OriginalPostingAmount}} Currency: {{OriginalCurrency}}";
         var template = new Template(templateText);
 
-        var expectedResult = new List<string> { "OriginalPostingAmount", "OriginalCurrency" };
+        var expectedResult = new List<IPlaceholder> { new Placeholder("OriginalPostingAmount"), new Placeholder("OriginalCurrency") };
 
         // Act
         var placeholders = template.Placeholders;
@@ -76,20 +77,20 @@ public class Template_Tests
 
         // Assert
         placeholders.Should().BeEquivalentTo(
-                new List<string>()
+                new List<IPlaceholder>()
                 {
-                    "PostingKey",
-                    "PostingDate",
-                    "OrginalPostingAmount",
-                    "OrginalCurrency",
-                    "NameRecipient",
-                    "Use",
-                    "SortCodeRecipient",
-                    "AccountRecipient",
-                    "PostingText",
-                    "BusinessTransactionCode",
-                    "RecurringStart",
-                    "RecurringEnd"
+                    new Placeholder("PostingKey"),
+                    new Placeholder("PostingDate"),
+                    new Placeholder("OrginalPostingAmount"),
+                    new Placeholder("OrginalCurrency"),
+                    new Placeholder("NameRecipient"),
+                    new Placeholder("Use"),
+                    new Placeholder("SortCodeRecipient"),
+                    new Placeholder("AccountRecipient"),
+                    new Placeholder("PostingText"),
+                    new Placeholder("BusinessTransactionCode"),
+                    new Placeholder("RecurringStart"),
+                    new Placeholder("RecurringEnd")
                 }
             );
     }

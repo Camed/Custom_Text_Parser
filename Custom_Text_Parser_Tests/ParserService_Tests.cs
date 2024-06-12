@@ -1,3 +1,4 @@
+using Custom_Text_Parser.Common;
 using Custom_Text_Parser.Exceptions;
 using Custom_Text_Parser.Interfaces;
 using Custom_Text_Parser.Services;
@@ -11,9 +12,9 @@ public class ParserService_Tests
     {
         // Arrange
         var mockParserService = Substitute.For<IParserService>();
-        var expectedResults = new Dictionary<string, List<string>>
+        var expectedResults = new Dictionary<IPlaceholder, List<string>>
         {
-            { "AccountRecipient", new List<string> { "1234567890" } }
+            { new Placeholder("AccountRecipient"), new List<string> { "1234567890" } }
         };
 
         mockParserService.ParseContent(Arg.Any<string>(), "DefaultTemplate").Returns(expectedResults);
@@ -74,7 +75,7 @@ internal class CustomerClass
         _parserService = parserService;
     }
 
-    public Dictionary<string, List<string>> Parse(string content, string templateName)
+    public Dictionary<IPlaceholder, List<string>> Parse(string content, string templateName)
     {
         return _parserService.ParseContent(content, templateName);
     }

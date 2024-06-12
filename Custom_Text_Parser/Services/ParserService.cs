@@ -23,7 +23,7 @@ public class ParserService : IParserService
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="InvalidOperationException"></exception>
-    public Dictionary<string, List<string>> ParseContent(string content, string templateName)
+    public Dictionary<IPlaceholder, List<string>> ParseContent(string content, string templateName)
     {
         if(!_templates.TryGetValue(templateName, out ITemplate? template))
         {

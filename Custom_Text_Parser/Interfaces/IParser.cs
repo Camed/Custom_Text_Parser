@@ -12,5 +12,5 @@ public interface IParser
     /// <param name="template">Template to be parsed.</param>
     /// <returns></returns>
     /// <exception cref="ParsingException"></exception>
-    public Dictionary<string, List<string>> Parse(string content, ITemplate template);
+    public Dictionary<IPlaceholder, List<string>> Parse(string content, ITemplate template);
 }

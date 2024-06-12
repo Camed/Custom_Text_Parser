@@ -5,5 +5,5 @@
 /// </summary>
 public interface IParserService
 {
-    Dictionary<string, List<string>> ParseContent(string content, string templateName);
+    Dictionary<IPlaceholder, List<string>> ParseContent(string content, string templateName);
 }
